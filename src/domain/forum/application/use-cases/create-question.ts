@@ -4,6 +4,7 @@ import { QuestionsRepository } from "../repositories/questions-repository";
 import { Either, right } from "@/core/either";
 import { QuestionAttachment } from "../../enterprise/entities/question-attachment";
 import { QuestionAttachmentList } from "../../enterprise/entities/question-attachment-list";
+import { Injectable } from "@nestjs/common";
 
 interface CreateQuestionUseCaseRequest {
     authorId: string;
@@ -19,6 +20,7 @@ type CreateQuestionUseCaseResponse = Either<
     }
 >;
 
+@Injectable()
 export class CreateQuestionUseCase {
     constructor(private questionsRepository: QuestionsRepository) {}
 
@@ -26,18 +28,18 @@ export class CreateQuestionUseCase {
         authorId,
         title,
         content,
-        attachmentsIds
+        attachmentsIds,
     }: CreateQuestionUseCaseRequest): Promise<CreateQuestionUseCaseResponse> {
         const question = Question.create({
             authorId: new UniqueEntityID(authorId),
             title,
-            content
+            content,
         });
 
         const questionAttachments = attachmentsIds.map((attachmentId) => {
             return QuestionAttachment.create({
                 attachmentId: new UniqueEntityID(attachmentId),
-                questionId: question.id
+                questionId: question.id,
             });
         });
 
@@ -46,7 +48,7 @@ export class CreateQuestionUseCase {
         await this.questionsRepository.create(question);
 
         return right({
-            question
+            question,
         });
     }
 }
