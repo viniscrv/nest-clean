@@ -1,9 +1,9 @@
 import { Either, left, right } from "@/core/either";
 import { Injectable } from "@nestjs/common";
-import { Stundant } from "../../enterprise/entities/studant";
 import { StudantsRepository } from "../repositories/studants-repository";
 import { HashGenerator } from "../cryptography/hash-generator";
 import { StudantAlreadyExistsError } from "./errors/studant-already-exists-error";
+import { Studant } from "../../enterprise/entities/studant";
 
 interface RegisterStudantUseCaseRequest {
     name: string;
@@ -14,7 +14,7 @@ interface RegisterStudantUseCaseRequest {
 type RegisterStudantUseCaseResponse = Either<
     StudantAlreadyExistsError,
     {
-        studant: Stundant;
+        studant: Studant;
     }
 >;
 
@@ -39,7 +39,7 @@ export class RegisterStudantUseCase {
 
         const hashedPassword = await this.hashGenerator.hash(password);
 
-        const studant = Stundant.create({
+        const studant = Studant.create({
             name,
             email,
             password: hashedPassword,

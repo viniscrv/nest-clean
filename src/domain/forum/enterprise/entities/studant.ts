@@ -7,7 +7,7 @@ interface StudantProps {
     password: string;
 }
 
-export class Stundant extends Entity<StudantProps> {
+export class Studant extends Entity<StudantProps> {
     get name() {
         return this.props.name;
     }
@@ -19,7 +19,7 @@ export class Stundant extends Entity<StudantProps> {
     }
 
     static create(props: StudantProps, id?: UniqueEntityID) {
-        const studant = new Stundant(props, id);
+        const studant = new Studant(props, id);
 
         return studant;
     }
