@@ -1,20 +1,21 @@
 import { Module } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
-import { Env } from "@/infra/env";
 import { JwtStrategy } from "./jwt.strategy";
 import { APP_GUARD } from "@nestjs/core";
 import { JwtAuthGuard } from "./jwt-auth.guard";
+import { EnvService } from "../env/env.service";
+import { EnvModule } from "../env/env.module";
 
 @Module({
     imports: [
         PassportModule,
         JwtModule.registerAsync({
-            inject: [ConfigService],
+            imports: [EnvModule],
+            inject: [EnvService],
             global: true,
-            useFactory(config: ConfigService<Env, true>) {
-                const secret = config.get("JWT_SECRET", { infer: true });
+            useFactory(env: EnvService) {
+                const secret = env.get("JWT_SECRET");
 
                 return {
                     secret,
@@ -24,6 +25,7 @@ import { JwtAuthGuard } from "./jwt-auth.guard";
     ],
     providers: [
         JwtStrategy,
+        EnvService,
         {
             provide: APP_GUARD,
             useClass: JwtAuthGuard,
