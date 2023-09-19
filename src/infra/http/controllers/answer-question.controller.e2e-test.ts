@@ -5,11 +5,13 @@ import { INestApplication } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
+import { QuestionFactory } from "test/factories/make-question";
 import { StudantFactory } from "test/factories/make-studant";
 
-describe("Create question (E2E)", () => {
+describe("Answer question (E2E)", () => {
     let app: INestApplication;
     let studantFactory: StudantFactory;
+    let questionFactory: QuestionFactory;
     let prisma: PrismaService;
     let jwt: JwtService;
 
@@ -20,33 +22,39 @@ describe("Create question (E2E)", () => {
 
         app = moduleRef.createNestApplication();
         studantFactory = moduleRef.get(StudantFactory);
+        questionFactory = moduleRef.get(QuestionFactory);
         prisma = moduleRef.get(PrismaService);
         jwt = moduleRef.get(JwtService);
 
         await app.init();
     });
 
-    test("[POST] /questions", async () => {
+    test("[POST] /questions/:questionId/answers", async () => {
         const user = await studantFactory.makePrismaStudant();
 
         const accessToken = jwt.sign({ sub: user.id.toString() });
 
+        const question = await questionFactory.makePrismaQuestion({
+            authorId: user.id,
+        });
+
+        const questionId = question.id.toString();
+
         const response = await request(app.getHttpServer())
-            .post("/questions")
+            .post(`/questions/${questionId}/answers`)
             .set("Authorization", `Bearer ${accessToken}`)
             .send({
-                title: "New question",
-                content: "Question content",
+                content: "New answer",
             });
 
         expect(response.statusCode).toBe(201);
 
-        const questionOnDatabase = await prisma.question.findFirst({
+        const answerOnDatabase = await prisma.answer.findFirst({
             where: {
-                title: "New question",
+                content: "New answer",
             },
         });
 
-        expect(questionOnDatabase).toBeTruthy();
+        expect(answerOnDatabase).toBeTruthy();
     });
 });

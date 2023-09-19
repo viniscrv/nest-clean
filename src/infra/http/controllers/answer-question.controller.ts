@@ -2,43 +2,41 @@ import {
     BadRequestException,
     Body,
     Controller,
-    HttpCode,
-    Param, Put
+    Param,
+    Post, UseGuards
 } from "@nestjs/common";
 import { CurrentUser } from "@/infra/auth/current-user-decorator";
+import { JwtAuthGuard } from "@/infra/auth/jwt-auth.guard";
 import { UserPayload } from "@/infra/auth/jwt.strategy";
 import { z } from "zod";
 import { ZodValidationPipe } from "../pipes/zod-validation.pipe";
-import { EditQuestionUseCase } from "@/domain/forum/application/use-cases/edit-question";
+import { AnswerQuestionUseCase } from "@/domain/forum/application/use-cases/answer-question";
 
-const editQuestionBodySchema = z.object({
-    title: z.string(),
+const answerQuestionBodySchema = z.object({
     content: z.string(),
 });
 
-type EditQuestionBodySchema = z.infer<typeof editQuestionBodySchema>;
+type AnswerQuestionBodySchema = z.infer<typeof answerQuestionBodySchema>;
 
-@Controller("/questions/:id")
-export class EditQuestionController {
-    constructor(private createQueston: EditQuestionUseCase) {}
+@Controller("/questions/:questionId/answers")
+export class AnswerQuestionController {
+    constructor(private createQueston: AnswerQuestionUseCase) {}
 
-    @Put()
-    @HttpCode(204)
+    @Post()
     async handle(
-        @Body(new ZodValidationPipe(editQuestionBodySchema))
-        body: EditQuestionBodySchema,
+        @Body(new ZodValidationPipe(answerQuestionBodySchema))
+        body: AnswerQuestionBodySchema,
         @CurrentUser() user: UserPayload,
-        @Param("id") questionId: string
+        @Param("questionId") questionId: string
     ) {
-        const { title, content } = body;
+        const { content } = body;
         const { sub: userId } = user;
 
         const result = await this.createQueston.execute({
-            title,
             content,
+            questionId,
             authorId: userId,
             attachmentsIds: [],
-            questionId
         });
 
         if (result.isLeft()) {
