@@ -13,6 +13,7 @@ describe("Authenticate Studant", () => {
     beforeEach(() => {
         inMemoryStudantsRepository = new InMemoryStudantsRepository();
         fakeHasher = new FakeHasher();
+        fakeEncrypter = new FakeEncrypter();
         sut = new AuthenticateStudantUseCase(
             inMemoryStudantsRepository,
             fakeHasher,
