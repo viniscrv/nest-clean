@@ -17,13 +17,13 @@ describe("Get question by slug (E2E)", () => {
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [AppModule, DatabaseModule],
-            providers: [StudantFactory],
+            providers: [StudantFactory, QuestionFactory],
         }).compile();
 
         app = moduleRef.createNestApplication();
 
         studantFactory = moduleRef.get(StudantFactory);
-        studantFactory = moduleRef.get(QuestionFactory);
+        questionFactory = moduleRef.get(QuestionFactory);
         jwt = moduleRef.get(JwtService);
 
         await app.init();

@@ -5,7 +5,6 @@ import {
     Query,
     UseGuards,
 } from "@nestjs/common";
-import { JwtAuthGuard } from "@/infra/auth/jwt-auth.guard";
 import { z } from "zod";
 import { ZodValidationPipe } from "../pipes/zod-validation.pipe";
 import { FetchRecentQuestionsUseCase } from "@/domain/forum/application/use-cases/fetch-recent-questions";

@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
 import {
     Question,
-    QuestionProps
+    QuestionProps,
 } from "@/domain/forum/enterprise/entities/question";
 import { Slug } from "@/domain/forum/enterprise/entities/value-objects/slug";
 import { Injectable } from "@nestjs/common";
@@ -11,7 +11,7 @@ import { PrismaQuestionMapper } from "@/infra/database/prisma/mappers/prisma-que
 
 export function makeQuestion(
     override: Partial<QuestionProps> = {},
-    id?: UniqueEntityID
+    id?: UniqueEntityID,
 ) {
     const question = Question.create(
         {
@@ -19,9 +19,9 @@ export function makeQuestion(
             title: faker.lorem.sentence(),
             content: faker.lorem.text(),
             slug: Slug.create("example-question"),
-            ...override
+            ...override,
         },
-        id
+        id,
     );
 
     return question;
