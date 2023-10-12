@@ -29,6 +29,9 @@ export class QuestionDetails extends ValueObject<QuestionDetailsProps> {
     get title() {
         return this.props.title;
     }
+    get slug() {
+        return this.props.slug;
+    }
     get content() {
         return this.props.content;
     }
