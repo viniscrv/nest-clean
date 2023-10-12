@@ -7,11 +7,15 @@ import { makeQuestion } from "test/factories/make-question";
 import { NotAllowedError } from "../../../../core/errors/errors/not-allowed-error";
 import { InMemoryAnswerAttachmentsRepository } from "test/repositories/in-memory-answer-attachments";
 import { InMemoryQuestionAttachmentsRepository } from "test/repositories/in-memory-question-attachments-repository";
+import { InMemoryAttachmentsRepository } from "test/repositories/in-memory-attachments-repository";
+import { InMemoryStudantsRepository } from "test/repositories/in-memory-studants-repository";
 
 let inMemoryAnswerRepository: InMemoryAnswerAttachmentsRepository;
 let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository;
 let inMemoryQuestionRepository: InMemoryQuestionsRepository;
 let inMemoryAnswersRepository: InMemoryAnswersRepository;
+let inMemoryAttachmentsRepository: InMemoryAttachmentsRepository;
+let inMemoryStudantsRepository: InMemoryStudantsRepository;
 let sut: ChooseQuestionBestAnswerUseCase;
 
 describe("Choose Question Best Answer", () => {
@@ -20,21 +24,25 @@ describe("Choose Question Best Answer", () => {
         inMemoryQuestionAttachmentsRepository =
             new InMemoryQuestionAttachmentsRepository();
         inMemoryAnswersRepository = new InMemoryAnswersRepository(
-            inMemoryAnswerRepository
+            inMemoryAnswerRepository,
         );
+        inMemoryAttachmentsRepository = new InMemoryAttachmentsRepository();
+        inMemoryStudantsRepository = new InMemoryStudantsRepository();
         inMemoryQuestionRepository = new InMemoryQuestionsRepository(
-            inMemoryQuestionAttachmentsRepository
+            inMemoryQuestionAttachmentsRepository,
+            inMemoryAttachmentsRepository,
+            inMemoryStudantsRepository,
         );
         sut = new ChooseQuestionBestAnswerUseCase(
             inMemoryQuestionRepository,
-            inMemoryAnswersRepository
+            inMemoryAnswersRepository,
         );
     });
 
     test("be able to choose the question best answer", async () => {
         const question = makeQuestion();
         const answer = makeAnswer({
-            questionId: question.id
+            questionId: question.id,
         });
 
         await inMemoryQuestionRepository.create(question);
@@ -42,20 +50,20 @@ describe("Choose Question Best Answer", () => {
 
         await sut.execute({
             authorId: question.authorId.toString(),
-            answerId: answer.id.toString()
+            answerId: answer.id.toString(),
         });
 
         expect(inMemoryQuestionRepository.items[0].bestAnswerId).toEqual(
-            answer.id
+            answer.id,
         );
     });
 
     test("not be able to choose another user question best answer", async () => {
         const question = makeQuestion({
-            authorId: new UniqueEntityID("author-1")
+            authorId: new UniqueEntityID("author-1"),
         });
         const answer = makeAnswer({
-            questionId: question.id
+            questionId: question.id,
         });
 
         await inMemoryQuestionRepository.create(question);
@@ -63,7 +71,7 @@ describe("Choose Question Best Answer", () => {
 
         const result = await sut.execute({
             authorId: "author-2",
-            answerId: answer.id.toString()
+            answerId: answer.id.toString(),
         });
 
         expect(result.isLeft()).toBe(true);

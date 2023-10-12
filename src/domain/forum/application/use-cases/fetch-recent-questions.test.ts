@@ -2,40 +2,48 @@ import { InMemoryQuestionsRepository } from "test/repositories/in-memory-questio
 import { makeQuestion } from "test/factories/make-question";
 import { FetchRecentQuestionsUseCase } from "./fetch-recent-questions";
 import { InMemoryQuestionAttachmentsRepository } from "test/repositories/in-memory-question-attachments-repository";
+import { InMemoryAttachmentsRepository } from "test/repositories/in-memory-attachments-repository";
+import { InMemoryStudantsRepository } from "test/repositories/in-memory-studants-repository";
 
 let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository;
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
+let inMemoryAttachmentsRepository: InMemoryAttachmentsRepository;
+let inMemoryStudantsRepository: InMemoryStudantsRepository;
 let sut: FetchRecentQuestionsUseCase;
 
 describe("Fetch Recent Questions", () => {
     beforeEach(() => {
         inMemoryQuestionAttachmentsRepository =
             new InMemoryQuestionAttachmentsRepository();
+        inMemoryAttachmentsRepository = new InMemoryAttachmentsRepository();
+        inMemoryStudantsRepository = new InMemoryStudantsRepository();
         inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
-            inMemoryQuestionAttachmentsRepository
+            inMemoryQuestionAttachmentsRepository,
+            inMemoryAttachmentsRepository,
+            inMemoryStudantsRepository,
         );
         sut = new FetchRecentQuestionsUseCase(inMemoryQuestionsRepository);
     });
 
     test("be able to fetch recent questions", async () => {
         await inMemoryQuestionsRepository.create(
-            makeQuestion({ createdAt: new Date(2023, 0, 20) })
+            makeQuestion({ createdAt: new Date(2023, 0, 20) }),
         );
         await inMemoryQuestionsRepository.create(
-            makeQuestion({ createdAt: new Date(2023, 0, 18) })
+            makeQuestion({ createdAt: new Date(2023, 0, 18) }),
         );
         await inMemoryQuestionsRepository.create(
-            makeQuestion({ createdAt: new Date(2023, 0, 23) })
+            makeQuestion({ createdAt: new Date(2023, 0, 23) }),
         );
 
         const result = await sut.execute({
-            page: 1
+            page: 1,
         });
 
         expect(result.value?.questions).toEqual([
             expect.objectContaining({ createdAt: new Date(2023, 0, 23) }),
             expect.objectContaining({ createdAt: new Date(2023, 0, 20) }),
-            expect.objectContaining({ createdAt: new Date(2023, 0, 18) })
+            expect.objectContaining({ createdAt: new Date(2023, 0, 18) }),
         ]);
     });
 
@@ -45,7 +53,7 @@ describe("Fetch Recent Questions", () => {
         }
 
         const result = await sut.execute({
-            page: 2
+            page: 2,
         });
 
         expect(result.value?.questions).toHaveLength(2);

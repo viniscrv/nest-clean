@@ -3,17 +3,20 @@ import { DeleteQuestionCommentUseCase } from "@/domain/forum/application/use-cas
 import { makeQuestionComment } from "test/factories/make-question-comment";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
 import { NotAllowedError } from "@/core/errors/errors/not-allowed-error";
+import { InMemoryStudantsRepository } from "test/repositories/in-memory-studants-repository";
 
 let inMemoryQuestionCommentsRepository: InMemoryQuestionCommentsRepository;
+let inMemoryStudantsRepository: InMemoryStudantsRepository;
 let sut: DeleteQuestionCommentUseCase;
 
 describe("Delete Question Comment", () => {
     beforeEach(() => {
+        inMemoryStudantsRepository = new InMemoryStudantsRepository();
         inMemoryQuestionCommentsRepository =
-            new InMemoryQuestionCommentsRepository();
+            new InMemoryQuestionCommentsRepository(inMemoryStudantsRepository);
 
         sut = new DeleteQuestionCommentUseCase(
-            inMemoryQuestionCommentsRepository
+            inMemoryQuestionCommentsRepository,
         );
     });
 
@@ -24,7 +27,7 @@ describe("Delete Question Comment", () => {
 
         await sut.execute({
             questionCommentId: questionComment.id.toString(),
-            authorId: questionComment.authorId.toString()
+            authorId: questionComment.authorId.toString(),
         });
 
         expect(inMemoryQuestionCommentsRepository.items).toHaveLength(0);
@@ -32,14 +35,14 @@ describe("Delete Question Comment", () => {
 
     it("should not be able to delete another user question comment", async () => {
         const questionComment = makeQuestionComment({
-            authorId: new UniqueEntityID("author-1")
+            authorId: new UniqueEntityID("author-1"),
         });
 
         await inMemoryQuestionCommentsRepository.create(questionComment);
 
         const result = await sut.execute({
             questionCommentId: questionComment.id.toString(),
-            authorId: "author-2"
+            authorId: "author-2",
         });
 
         expect(result.isLeft()).toBe(true);
