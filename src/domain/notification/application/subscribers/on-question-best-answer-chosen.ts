@@ -3,11 +3,13 @@ import { EventHandler } from "@/core/events/event-handler";
 import { SendNotificationUseCase } from "../use-cases/send-notification";
 import { AnswersRepository } from "@/domain/forum/application/repositories/answers-respository";
 import { QuestionBestAnswerChosenEvent } from "@/domain/forum/enterprise/events/question-best-answer-chosen-event";
+import { Injectable } from "@nestjs/common";
 
+@Injectable()
 export class OnQuestionBestAnswerChosen implements EventHandler {
     constructor(
         private answersRepository: AnswersRepository,
-        private sendNotification: SendNotificationUseCase
+        private sendNotification: SendNotificationUseCase,
     ) {
         this.setupSubscriptions();
     }
@@ -15,16 +17,16 @@ export class OnQuestionBestAnswerChosen implements EventHandler {
     setupSubscriptions(): void {
         DomainEvents.register(
             this.sendQuestionBestAnswerNotification.bind(this),
-            QuestionBestAnswerChosenEvent.name
+            QuestionBestAnswerChosenEvent.name,
         );
     }
 
     private async sendQuestionBestAnswerNotification({
         question,
-        bestAnswerId
+        bestAnswerId,
     }: QuestionBestAnswerChosenEvent) {
         const answer = await this.answersRepository.findById(
-            bestAnswerId.toString()
+            bestAnswerId.toString(),
         );
 
         if (answer) {
@@ -33,7 +35,7 @@ export class OnQuestionBestAnswerChosen implements EventHandler {
                 title: `Sua resposta foi escolhida!`,
                 content: `A resposta que você enviou em "${question.title
                     .substring(0, 20)
-                    .concat("...")}" foi escolhida pelo autor!`
+                    .concat("...")}" foi escolhida pelo autor!`,
             });
         }
     }
